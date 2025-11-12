@@ -1,0 +1,27 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2025-10-30 10:00:00.000000",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "json": "{}",
+ "modified": "2025-10-30 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tally Migration",
+ "name": "Tally Migration Report",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Tally Field Mapping",
+ "report_name": "Tally Migration Report",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ]
+}

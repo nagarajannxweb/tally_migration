@@ -1,0 +1,58 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-30 16:46:04.148977",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "d",
+  "s",
+  "dd"
+ ],
+ "fields": [
+  {
+   "fieldname": "d",
+   "fieldtype": "Link",
+   "label": "d",
+   "options": "DocField"
+  },
+  {
+   "fieldname": "s",
+   "fieldtype": "Table",
+   "label": "s",
+   "options": "Tally Field Mapping Item"
+  },
+  {
+   "fieldname": "dd",
+   "fieldtype": "Autocomplete",
+   "label": "dd",
+   "options": "hi\nhow \nare\nyou\nnow"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-10-30 18:20:44.040646",
+ "modified_by": "Administrator",
+ "module": "Tally Migration",
+ "name": "Test Doc",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
