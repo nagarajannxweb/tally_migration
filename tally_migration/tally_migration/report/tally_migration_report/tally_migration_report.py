@@ -46,6 +46,7 @@ def get_columns_and_data(filters):
 			order_by = frappe.scrub(i.tally_field_name)
 	
 	tables = list(set(tables))	
+	
 	tables.insert(0, parent)
 
 	for idx, table in enumerate(tables):		
