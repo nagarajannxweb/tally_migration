@@ -38,7 +38,8 @@ def get_doctype_fields(doctype):
 					"fieldtype": field.fieldtype,
 					"field_cdn": field.name,
 					"parent": doctype,
-					"is_child_table": 0
+					"is_child_table": 0,
+					"options": field.options
 				})
 				
 				# If it's a table field, add its child fields
@@ -53,7 +54,8 @@ def get_doctype_fields(doctype):
 								"parent": field.options,
 								"is_child_table": 1,
 								"field_cdn": child_field.name,
-								"child_table_name": field.options
+								"child_table_name": field.options,
+								"options": field.options
 							})
 		fields.append({
 					"label": "ID",

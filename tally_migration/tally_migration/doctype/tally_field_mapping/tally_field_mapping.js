@@ -62,11 +62,13 @@ frappe.ui.form.on('Tally Field Mapping Item', {
 			if (field.label === row.erp_field) {
 				if (field.is_child_table) {
 					frappe.model.set_value(cdt, cdn, 'is_child_table', field.is_child_table);
-					frappe.model.set_value(cdt, cdn, 'child_table_name', field.parent);					
+					frappe.model.set_value(cdt, cdn, 'child_table_name', field.parent);	
+					frappe.model.set_value(cdt, cdn, 'options', field.options);				
 				}		
 				frappe.model.set_value(cdt, cdn, 'erp_field_name', field.fieldname);		
 				frappe.model.set_value(cdt, cdn, 'erp_field_cdn', field.field_cdn);		
 				frappe.model.set_value(cdt, cdn, 'erp_field_type', field.fieldtype);
+				frappe.model.set_value(cdt, cdn, 'options', field.options);
 			}
 		})
 			

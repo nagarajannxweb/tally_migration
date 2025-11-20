@@ -10,13 +10,15 @@
   "column_break_1",
   "value",
   "ledger_entry_type",
+  "is_filter",
   "section_break_mrqi",
   "erp_field_name",
   "erp_field_type",
   "erp_field_cdn",
   "column_break_qyxx",
   "is_child_table",
-  "child_table_name"
+  "child_table_name",
+  "options"
  ],
  "fields": [
   {
@@ -43,7 +45,7 @@
    "depends_on": "eval:doc.is_child_table==1",
    "fieldname": "child_table_name",
    "fieldtype": "Data",
-   "label": "Child Table Name"
+   "label": "Table Name"
   },
   {
    "columns": 3,
@@ -87,12 +89,24 @@
    "in_list_view": 1,
    "label": "Ledger Entry Type",
    "options": "\nDr\nCr"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_filter",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Filter"
+  },
+  {
+   "fieldname": "options",
+   "fieldtype": "Data",
+   "label": "Options"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-03 16:44:06.213679",
+ "modified": "2025-11-19 11:09:25.344604",
  "modified_by": "Administrator",
  "module": "Tally Migration",
  "name": "Tally Field Mapping Item",

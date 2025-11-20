@@ -2,35 +2,80 @@
 // For license information, please see license.txt
 
 frappe.query_reports["Tally Migration Report"] = {
-	"filters": [
+    filters: [
 		{
-			"fieldname": "doctype",
-			"label": __("DocType"),
-			"fieldtype": "Link",
-			"options": "DocType",
-			"reqd": 1,
-			"default": "",
-			"get_query": function() {
-				return {
-					"filters": {
-						"name": ["in", get_mapped_doctypes()]
-					}
-				};
-			}
+			fieldname: "doctype",
+			label: __("DocType"),
+			fieldtype: "Link",
+			options: "DocType",
+			reqd: 1,
+			change: load_dynamic_filters
 		},
-		{
-			"fieldname": "from_date",
-			"label": __("From Date"),
-			"fieldtype": "Date",
-			"reqd": 1
-		},{
-			"fieldname": "to_date",
-			"label": __("To Date"),
-			"fieldtype": "Date",	
-			"reqd": 1		
-		}		
-	],	
+
+		// placeholders
+		{ fieldname: "dyn_1", label: "", fieldtype: "Data", hidden: 1 },
+		{ fieldname: "dyn_2", label: "", fieldtype: "Data", hidden: 1 },
+		{ fieldname: "dyn_3", label: "", fieldtype: "Data", hidden: 1 },
+		{ fieldname: "dyn_4", label: "", fieldtype: "Data", hidden: 1 },
+		{ fieldname: "dyn_5", label: "", fieldtype: "Data", hidden: 1 },
+		{ fieldname: "dyn_6", label: "", fieldtype: "Data", hidden: 1 },
+		{ fieldname: "dyn_7", label: "", fieldtype: "Data", hidden: 1 },
+		{ fieldname: "dyn_8", label: "", fieldtype: "Data", hidden: 1 },
+		{ fieldname: "dyn_9", label: "", fieldtype: "Data", hidden: 1 },
+	]
 };
+
+function load_dynamic_filters() {
+    let doctype = frappe.query_report.get_filter_value("doctype");
+    if (!doctype) return;
+
+    frappe.call({
+        method: "tally_migration.tally_migration.report.tally_migration_report.tally_migration_report.set_filters",
+        args: { doctype },
+        callback: function(r) {
+            if (!r.message) return;
+			console.log("ji")
+            apply_filters_to_placeholders(r.message);
+        }
+    });
+}
+
+function apply_filters_to_placeholders(fields) {
+    let slots = [
+        "dyn_1","dyn_2","dyn_3","dyn_4","dyn_5",
+        "dyn_6","dyn_7","dyn_8","dyn_9"
+    ];
+
+	frappe.query_reports["Tally Migration Report"].filters[0] = 		{
+			fieldname: "doctype",
+			label: __("DocType"),
+			fieldtype: "Link",
+			options: "DocType",
+			reqd: 1,
+			change: load_dynamic_filters,
+			default: frappe.query_report.get_filter("doctype").value
+		},
+    fields.forEach((fld, idx) => {
+        let slot = slots[idx];
+        if (!slot) return;
+		frappe.query_reports["Tally Migration Report"].filters[idx+1] = {
+                ...fld
+            };
+    });
+
+    // Reinitialize all filters
+    frappe.query_report.setup_filters();
+    
+    // Show only the configured ones
+    fields.forEach((fld, idx) => {
+        let slot = slots[idx];
+        let f = frappe.query_report.get_filter(slot);
+        if (f) {
+            f.$wrapper.show();
+        }
+    });
+}
+
 
 function get_mapped_doctypes() {
 	// Get list of DocTypes that have field mappings

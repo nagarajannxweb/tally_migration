@@ -12,112 +12,114 @@ def execute(filters=None):
 	"""
 	if not filters or not filters.get("doctype"):
 		frappe.msgprint(_("Please select a DocType"))
-		return [], []
-	
-	columns, data = get_columns(filters)	
+		return [], []	
+	columns, data = get_columns_and_data(filters)		
 	return columns, data
 
 
-
-def get_columns(filters):
-	"""Generate columns dynamically based on Tally Field Mapping"""
-	doctype = filters.get("doctype")
-	
-	# Check if mapping exists
-	if not frappe.db.exists("Tally Field Mapping", doctype):
-		return []
-	
-	# Get the mapping document
-	mapping_doc = frappe.get_doc("Tally Field Mapping", doctype)	
-	tables = [mapping_doc.doctype_name] + list(set( [i.child_table_name for i in mapping_doc.field_mappings if i.is_child_table]	))
-	fields = {frappe.scrub(i):[] for i in tables}	
-	tally_fields = {}
-	for i in mapping_doc.field_mappings:
-		if i.child_table_name:
-			tally_fields.setdefault(frappe.scrub(i.child_table_name), []).append(i.tally_field_name)
-	
-	columns = [{
-			"fieldname": 'dr_cr',
-			"label": 'Ledger Amount Dr/Cr',
-			"fieldtype": "Data",
-			"width": 150
-		},{
-			"fieldname": 'voucher_type',
-			"label": 'Voucher Type Name',
-			"fieldtype": "Data",
-			"width": 150
-		},{
-			"fieldname": 'change_mode',
-			"label": 'Change Mode',
-			"fieldtype": "Data",
-			"width": 150
-		}]
+def get_columns_and_data(filters):
+	parent = filters.get("doctype")	
+	tall_field_mapping = frappe.get_doc("Tally Field Mapping", parent)	
+	tables = []
+	tally_fields = []
+	query_data = {}
 	column_name = []
-	where ={}
-	all_fields = ["dr_cr"]
-	for row in mapping_doc.field_mappings:	
-		all_fields.append(f"`{frappe.scrub(row.tally_field_name)}`")
-		if frappe.scrub(row.child_table_name) not in where:
-			if row.is_child_table == 0:
-				where[frappe.scrub(mapping_doc.doctype_name)] = f"WHERE ({frappe.scrub(mapping_doc.doctype_name)}.posting_date BETWEEN '{filters.get('from_date')}' AND '{filters.get('to_date')}') AND {frappe.scrub(mapping_doc.doctype_name)}.docstatus = 1"
-			else:
-				where[frappe.scrub(row.child_table_name)] = f""" 
-				WHERE {frappe.scrub(row.child_table_name)}.parent IN (
-					SELECT name
-					FROM `tab{mapping_doc.doctype_name}`				
-					WHERE 
-					(posting_date BETWEEN '{filters.get('from_date')}' AND '{filters.get('to_date')}')
-					  AND docstatus = 1
-				)
-				"""		
-		if frappe.scrub(row.tally_field_name) not in column_name:
+	columns = []
+	order_by = None
+	for i in tall_field_mapping.field_mappings:
+		if frappe.scrub(i.tally_field_name) not in column_name:
 			columns.append({
-				"fieldname": frappe.scrub(row.tally_field_name),
-				"label": _(row.tally_field_name),
+				"fieldname": frappe.scrub(i.tally_field_name),
+				"label": _(i.tally_field_name),
 				"fieldtype": "Data",
 				"width": 150
 			})
-			column_name.append(frappe.scrub(row.tally_field_name))
-		for table in tables:
-			if row.child_table_name == table:
-				if row.ledger_entry_type in ['Cr', 'Dr']:
-					fields[frappe.scrub(table)].append(f"'{row.ledger_entry_type}' AS dr_cr")
-				# else:
-				fields[frappe.scrub(table)].append(f"{frappe.scrub(table)}.{row.erp_field_name} AS '{frappe.scrub(row.tally_field_name)}'")
-			else:
-				if row.erp_field_name == "name":
-					if row.is_child_table == 0:
-						fields[frappe.scrub(table)].append(f"{frappe.scrub(table)}.parent AS {frappe.scrub(row.tally_field_name)}")
-				else:	
-					# if row.ledger_entry_type not in ['Cr', 'Dr']:	
-						if row.tally_field_name not in tally_fields[frappe.scrub(table)]:
-							fields[frappe.scrub(table)].append(f"NULL AS '{frappe.scrub(row.tally_field_name)}'")
-
-	query = ""
-	for idx, i in enumerate(tables):		
-		query += f"""
-		SELECT
-		'{mapping_doc.voucher_type_name}' AS voucher_type,		
-		{",".join(list(set(all_fields)))},
-		'{mapping_doc.change_mode}' AS change_mode
-		FROM (		
-		SELECT {','.join(fields[frappe.scrub(i)])}
-		FROM `tab{i}` AS {frappe.scrub(i)}
-		"""
-		query += " " + where.get(frappe.scrub(i), "")
-		query += ") AS " + frappe.scrub(i)+str(idx)
-		
-
-		if idx < len(tables) - 1:
-			query += " UNION ALL "
-	query += """
-		ORDER BY voucher_number, 
-				CASE 
-					WHEN voucher_date IS NULL THEN 2 
-					ELSE 1 
-				END;
-		"""
+			column_name.append(frappe.scrub(i.tally_field_name))
+		if i.child_table_name != parent:
+			tables.append(i.child_table_name)
+		if f"`{frappe.scrub(i.tally_field_name)}`" not in tally_fields:
+			tally_fields.append(f"`{frappe.scrub(i.tally_field_name)}`")
+		if i.child_table_name:
+			if i.child_table_name not in query_data:
+				query_data[i.child_table_name] = {"fields":{}, "alias":""}
+		if i.erp_field == "ID":
+			order_by = frappe.scrub(i.tally_field_name)
 	
-	# frappe.throw(f"{query}")
-	data = frappe.db.sql(query, as_dict=1)
+	tables = list(set(tables))	
+	tables.insert(0, parent)
+
+	for idx, table in enumerate(tables):		
+		query_data[table]["alias"] = frappe.scrub(table)	
+		for i in tall_field_mapping.field_mappings:		
+			col_field_name = frappe.scrub(i.tally_field_name)
+			if i.child_table_name == table:				
+				query_data[table]["fields"][col_field_name] = f"{query_data[table]["alias"]}.{i.erp_field_name} as `{col_field_name}`"
+			else:
+				if col_field_name not in query_data[table]["fields"]:
+					if i.value:
+						query_data[table]["fields"][col_field_name] = f"{i.value} as `{col_field_name}`"
+					elif i.erp_field == "ID":
+						query_data[table]["fields"][col_field_name] = f"{query_data[table]["alias"]}.parent as `{col_field_name}`"
+					else:
+						query_data[table]["fields"][col_field_name] = f"NULL as `{col_field_name}`"
+	query = ""	
+	parent_query = None
+	for idx, key in enumerate(tables):
+		query += f"SELECT {','.join([query_data[key]['fields'][i] for i in query_data[key]['fields']])} FROM `tab{key}` AS {query_data[key]['alias']}"
+		if key == filters.get('doctype'):
+			query_parts = []			
+			for fltr_key, value in filters.items():
+				if fltr_key != "doctype":
+					query_parts.append(f"{query_data[key]['alias']}.{fltr_key} = '{value}'")
+			if query_parts:
+				query += " WHERE " + " AND ".join(query_parts)
+				parent_query = f"""
+				SELECT {query_data[key]['alias']}.name
+				FROM `tab{key}` AS {query_data[key]['alias']}
+				WHERE {'AND'.join(query_parts)}
+				"""
+		else:
+			query += f""" WHERE {query_data[key]['alias']}.parent in (
+			{parent_query}
+			)"""
+				
+
+			
+		if idx < len(tables) - 1:
+			query += " UNION ALL "		
+
+
+	query1 = f"""
+			SELECT
+				{','.join(tally_fields)}
+			FROM({query})		
+			AS final_data									
+			"""
+	if order_by:
+		query1 += f"ORDER BY {order_by}"
+
+	data = frappe.db.sql(query1, as_dict=1)
 	return columns, data
+
+# def query_builder(filters=None, parent= None, 
+# 				  tall_field_mapping=None, tables=None, 
+# 				  tally_fields=None, query_data=None, column_name=None, columns=None, order_by=None):
+
+			
+
+@frappe.whitelist()
+def set_filters(doctype):
+	tall_field_mapping = frappe.get_doc("Tally Field Mapping", doctype)	
+	filters = []
+	for i in tall_field_mapping.field_mappings:
+		if i.is_filter:
+			filters.append({
+				"fieldname": frappe.scrub(i.erp_field_name),
+				"label": i.erp_field,
+				"fieldtype": i.erp_field_type,
+				"options": i.options,
+				"reqd": 0,
+				"default": "",
+			})
+	return filters
+
