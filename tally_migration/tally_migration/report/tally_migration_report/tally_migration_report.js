@@ -5,9 +5,9 @@ frappe.query_reports["Tally Migration Report"] = {
     filters: [
 		{
 			fieldname: "doctype",
-			label: __("DocType"),
+			label: __("Tally Field Mapping"),
 			fieldtype: "Link",
-			options: "DocType",
+			options: "Tally Field Mapping",
 			reqd: 1,
 			change: load_dynamic_filters
 		},
@@ -48,9 +48,9 @@ function apply_filters_to_placeholders(fields) {
 
 	frappe.query_reports["Tally Migration Report"].filters[0] = 		{
 			fieldname: "doctype",
-			label: __("DocType"),
+			label: __("Tally Field Mapping"),
 			fieldtype: "Link",
-			options: "DocType",
+			options: "Tally Field Mapping",
 			reqd: 1,
 			change: load_dynamic_filters,
 			default: frappe.query_report.get_filter("doctype").value

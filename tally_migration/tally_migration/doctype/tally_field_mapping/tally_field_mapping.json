@@ -1,19 +1,22 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:doctype_name",
+ "autoname": "field:name1",
  "creation": "2025-10-30 10:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "name1",
   "doctype_name",
-  "voucher_type_name",
   "column_break_mhom",
   "is_transaction",
+  "voucher_type_name",
   "change_mode",
   "section_break_1",
-  "field_mappings"
+  "field_mappings",
+  "section_break_blry",
+  "filters"
  ],
  "fields": [
   {
@@ -22,8 +25,7 @@
    "in_list_view": 1,
    "label": "DocType",
    "options": "DocType",
-   "reqd": 1,
-   "unique": 1
+   "reqd": 1
   },
   {
    "fieldname": "section_break_1",
@@ -44,7 +46,8 @@
    "depends_on": "eval: doc.is_transaction == 1;",
    "fieldname": "voucher_type_name",
    "fieldtype": "Data",
-   "label": "Voucher Type Name"
+   "label": "Voucher Type Name",
+   "unique": 1
   },
   {
    "depends_on": "eval: doc.is_transaction == 1;",
@@ -57,11 +60,27 @@
    "fieldname": "is_transaction",
    "fieldtype": "Check",
    "label": "Is Transaction"
+  },
+  {
+   "fieldname": "section_break_blry",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "filters",
+   "fieldtype": "Table",
+   "label": "Filters",
+   "options": "Tally Filter"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name",
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-13 11:45:50.181759",
+ "modified": "2026-01-10 13:47:38.106967",
  "modified_by": "Administrator",
  "module": "Tally Migration",
  "name": "Tally Field Mapping",

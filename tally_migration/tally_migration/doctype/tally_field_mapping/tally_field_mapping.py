@@ -64,6 +64,13 @@ def get_doctype_fields(doctype):
 					"parent": doctype,
 					"is_child_table": 0
 				})
+		fields.append({
+					"label": "Creation",
+					"fieldname": "creation",
+					"fieldtype": "Datetime",					
+					"parent": doctype,
+					"is_child_table": 0
+				})
 		return fields
 	except Exception as e:
 		frappe.log_error(f"Error fetching fields for {doctype}: {str(e)}")
@@ -122,3 +129,36 @@ def get_filtered_docfields(doctype, txt, searchfield, start, page_len, filters):
 	except Exception as e:
 		frappe.log_error(f"Error in get_filtered_docfields: {str(e)}")
 		return []
+
+
+import frappe
+
+@frappe.whitelist()
+def confirm_tally_creation(doctype):
+	filters = {}
+	if doctype in ["Sales Invoice", "Purchase Invoice", "Journal Entry"]:
+		filters["docstatus"] = 1  # Only consider submitted documents    
+	frappe.db.set_value(
+		doctype,
+		filters,  # Assuming docstatus 1 means submitted
+		"custom_created_in_tally",
+		1,
+		update_modified=False
+	)    
+	return "Tally creation confirmed"
+
+
+@frappe.whitelist()
+def revert_tally_creation(doctype):
+	filters = {}
+	if doctype in ["Sales Invoice", "Purchase Invoice", "Journal Entry"]:
+		filters["docstatus"] = 1  # Only consider submitted documents
+	frappe.db.set_value(
+		doctype,
+		filters,
+		"custom_created_in_tally",
+		0,
+		update_modified=False
+	)
+	# frappe.db.commit()
+	return "Tally creation reverted"
