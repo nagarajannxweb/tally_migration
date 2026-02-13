@@ -12,7 +12,7 @@ frappe.ui.form.on('Tally Field Mapping', {
                 frappe.call({					
                     method: "tally_migration.tally_migration.doctype.tally_field_mapping.tally_field_mapping.confirm_tally_creation",
                     args: {
-                        doctype: frm.doc.doctype_name						
+                        tally_field_mapping: frm.doc.name						
                     },
                     freeze: true,
                     callback(r) {
@@ -31,7 +31,7 @@ frappe.ui.form.on('Tally Field Mapping', {
                 frappe.call({
                     method: "tally_migration.tally_migration.doctype.tally_field_mapping.tally_field_mapping.revert_tally_creation",
                     args: {
-                        doctype: frm.doc.doctype_name
+                        tally_field_mapping: frm.doc.name
                     },
                     freeze: true,
                     callback(r) {

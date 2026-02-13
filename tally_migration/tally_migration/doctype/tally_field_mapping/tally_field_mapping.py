@@ -145,9 +145,11 @@ def get_filtered_docfields(doctype, txt, searchfield, start, page_len, filters):
 import frappe
 
 @frappe.whitelist()
-def confirm_tally_creation(doctype):
+def confirm_tally_creation(tally_field_mapping):
+	doctype = frappe.db.get_value("Tally Field Mapping", tally_field_mapping, "doctype_name")
 	filters = {}
-	if doctype in ["Sales Invoice", "Purchase Invoice", "Journal Entry"]:
+	is_submittable = frappe.db.get_value("DocType", doctype, "is_submittable")	
+	if is_submittable == 1:
 		filters["docstatus"] = 1  # Only consider submitted documents    
 	frappe.db.set_value(
 		doctype,
@@ -160,9 +162,11 @@ def confirm_tally_creation(doctype):
 
 
 @frappe.whitelist()
-def revert_tally_creation(doctype):
+def revert_tally_creation(tally_field_mapping):
+	doctype = frappe.db.get_value("Tally Field Mapping", tally_field_mapping, "doctype_name")
 	filters = {}
-	if doctype in ["Sales Invoice", "Purchase Invoice", "Journal Entry"]:
+	is_submittable = frappe.db.get_value("DocType", doctype, "is_submittable")	
+	if is_submittable == 1:
 		filters["docstatus"] = 1  # Only consider submitted documents
 	frappe.db.set_value(
 		doctype,

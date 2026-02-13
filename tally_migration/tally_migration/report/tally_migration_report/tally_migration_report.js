@@ -25,19 +25,24 @@ frappe.query_reports["Tally Migration Report"] = {
 	],
 	onload: function(report) {
 
-        report.page.add_inner_button("Update Tally Status", function () {
-
-            frappe.call({
-                method: "tally_migration.tally_migration.report.tally_migration_report.tally_migration_report.update_tally_creation_status",
-                args: {
-                    doctype: "Purchase Invoice"
-                },
-                callback: function (r) {
-                    if (!r.exc) {
-                        frappe.msgprint("Updated Successfully");
-                    }
-                }
-            });
+        report.page.add_inner_button("Confirm Tally Creation", function () {
+			let a = frappe.query_report.filters.filter(r=>r.options == "Tally Field Mapping")
+			if(a){
+				console.log(a[0].value)
+				frappe.call({
+					method: "tally_migration.tally_migration.doctype.tally_field_mapping.tally_field_mapping.confirm_tally_creation",
+					args: {
+						tally_field_mapping: a[0].value
+					},
+					callback: function (r) {
+						if (!r.exc) {
+							frappe.msgprint("Updated Successfully");
+						}
+					}
+				});
+			}else{
+				frappe.msgprint("Set Tally Field Mapping Before Confirm Tally Creation")
+			}            			
 
         });
 
