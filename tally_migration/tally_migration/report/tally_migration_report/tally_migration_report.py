@@ -105,7 +105,7 @@ def get_columns_and_data(filters):
 				parent_query = f"""
 				SELECT {query_data[key]['alias']}.name
 				FROM `tab{key}` AS {query_data[key]['alias']}
-				WHERE {'AND'.join(query_parts)}
+				WHERE {' AND '.join(query_parts)}
 				"""
 		else:
 			query += f""" WHERE {query_data[key]['alias']}.parent in (
@@ -171,18 +171,7 @@ def set_filters(doctype):
 	return filters
 
 
-
-# import re
-
-# def tally_safe_unit(name: str) -> str:
-# 	if not name:
-# 		return ""
-# 	uoms = frappe.db.get_all("UOM", {},"name",pluck="name")
-# 	for i in uoms:
-# 		doc = frappe.get_doc("UOM", i)
-# 		name = doc.name
-# 		name = name.strip()
-# 		name = re.sub(r"[^\w]", "", name)
-# 		if name != doc.name:
-# 			doc.rename(name)
-#     return name
+@frappe.whitelist()
+def update_tally_creation_status(doctype):
+	frappe.db.set_value(doctype, {"docstatus":1}, "custom_created_in_tally", 1)
+	return

@@ -22,7 +22,26 @@ frappe.query_reports["Tally Migration Report"] = {
 		{ fieldname: "dyn_7", label: "", fieldtype: "Data", hidden: 1 },
 		{ fieldname: "dyn_8", label: "", fieldtype: "Data", hidden: 1 },
 		{ fieldname: "dyn_9", label: "", fieldtype: "Data", hidden: 1 },
-	]
+	],
+	onload: function(report) {
+
+        report.page.add_inner_button("Update Tally Status", function () {
+
+            frappe.call({
+                method: "tally_migration.tally_migration.report.tally_migration_report.tally_migration_report.update_tally_creation_status",
+                args: {
+                    doctype: "Purchase Invoice"
+                },
+                callback: function (r) {
+                    if (!r.exc) {
+                        frappe.msgprint("Updated Successfully");
+                    }
+                }
+            });
+
+        });
+
+    }
 };
 
 function load_dynamic_filters() {

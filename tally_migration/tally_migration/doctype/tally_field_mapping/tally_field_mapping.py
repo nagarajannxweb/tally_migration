@@ -6,12 +6,23 @@ from frappe.model.document import Document
 
 
 class TallyFieldMapping(Document):
+	def before_insert(self):
+		self.create_custom_created_in_tally_field()
 	def before_save(self):
 		self.set_parent_doctype()
 	def set_parent_doctype(self):
 		for i in self.field_mappings:
 			if i.is_child_table == 0:
 				i.child_table_name = self.doctype_name
+
+	def create_custom_created_in_tally_field(self):
+		if not frappe.get_meta(self.doctype_name).get_field("custom_created_in_tally"):	
+			custom_field = frappe.new_doc("Custom Field")
+			custom_field.dt = self.doctype_name
+			custom_field.label = "Created In Tally"
+			custom_field.fieldtype = "Check"
+			custom_field.save()
+
 		
 	
 
