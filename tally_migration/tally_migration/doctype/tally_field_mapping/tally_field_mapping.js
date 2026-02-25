@@ -5,11 +5,50 @@ let my_global_var = null;
 
 frappe.ui.form.on('Tally Field Mapping', {
 	refresh: function(frm) {
+
+        frm.add_custom_button(
+            "Confirm Tally Creation",
+            () => {
+                frappe.call({					
+                    method: "tally_migration.tally_migration.doctype.tally_field_mapping.tally_field_mapping.confirm_tally_creation",
+                    args: {
+                        tally_field_mapping: frm.doc.name						
+                    },
+                    freeze: true,
+                    callback(r) {
+                        if (!r.exc) {
+                            frappe.msgprint(r.message);
+                            frm.reload_doc();
+                        }
+                    }
+                });
+            }
+        );
+
+        frm.add_custom_button(
+            "Revert Tally Creation",
+            () => {
+                frappe.call({
+                    method: "tally_migration.tally_migration.doctype.tally_field_mapping.tally_field_mapping.revert_tally_creation",
+                    args: {
+                        tally_field_mapping: frm.doc.name
+                    },
+                    freeze: true,
+                    callback(r) {
+                        if (!r.exc) {
+                            frappe.msgprint(r.message);
+                            frm.reload_doc();
+                        }
+                    }
+                });
+            }
+        );
+
 		// Add custom buttons or actions if needed
 		if (!frm.is_new()) {
 			frm.add_custom_button(__('View Tally Migration Report'), function() {
 				frappe.set_route('query-report', 'Tally Migration Report', {
-					'doctype': frm.doc.doctype_name
+					'doctype': frm.doc.name1
 				});
 			});
 		}

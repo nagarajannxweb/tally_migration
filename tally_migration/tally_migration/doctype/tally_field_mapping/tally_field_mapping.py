@@ -6,12 +6,23 @@ from frappe.model.document import Document
 
 
 class TallyFieldMapping(Document):
+	def before_insert(self):
+		self.create_custom_created_in_tally_field()
 	def before_save(self):
 		self.set_parent_doctype()
 	def set_parent_doctype(self):
 		for i in self.field_mappings:
 			if i.is_child_table == 0:
 				i.child_table_name = self.doctype_name
+
+	def create_custom_created_in_tally_field(self):
+		if not frappe.get_meta(self.doctype_name).get_field("custom_created_in_tally"):	
+			custom_field = frappe.new_doc("Custom Field")
+			custom_field.dt = self.doctype_name
+			custom_field.label = "Created In Tally"
+			custom_field.fieldtype = "Check"
+			custom_field.save()
+
 		
 	
 
@@ -61,6 +72,13 @@ def get_doctype_fields(doctype):
 					"label": "ID",
 					"fieldname": "name",
 					"fieldtype": "Data",					
+					"parent": doctype,
+					"is_child_table": 0
+				})
+		fields.append({
+					"label": "Creation",
+					"fieldname": "creation",
+					"fieldtype": "Datetime",					
 					"parent": doctype,
 					"is_child_table": 0
 				})
@@ -122,3 +140,40 @@ def get_filtered_docfields(doctype, txt, searchfield, start, page_len, filters):
 	except Exception as e:
 		frappe.log_error(f"Error in get_filtered_docfields: {str(e)}")
 		return []
+
+
+import frappe
+
+@frappe.whitelist()
+def confirm_tally_creation(tally_field_mapping):
+	doctype = frappe.db.get_value("Tally Field Mapping", tally_field_mapping, "doctype_name")
+	filters = {}
+	is_submittable = frappe.db.get_value("DocType", doctype, "is_submittable")	
+	if is_submittable == 1:
+		filters["docstatus"] = 1  # Only consider submitted documents    
+	frappe.db.set_value(
+		doctype,
+		filters,  # Assuming docstatus 1 means submitted
+		"custom_created_in_tally",
+		1,
+		update_modified=False
+	)    
+	return "Tally creation confirmed"
+
+
+@frappe.whitelist()
+def revert_tally_creation(tally_field_mapping):
+	doctype = frappe.db.get_value("Tally Field Mapping", tally_field_mapping, "doctype_name")
+	filters = {}
+	is_submittable = frappe.db.get_value("DocType", doctype, "is_submittable")	
+	if is_submittable == 1:
+		filters["docstatus"] = 1  # Only consider submitted documents
+	frappe.db.set_value(
+		doctype,
+		filters,
+		"custom_created_in_tally",
+		0,
+		update_modified=False
+	)
+	# frappe.db.commit()
+	return "Tally creation reverted"

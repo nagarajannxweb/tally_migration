@@ -5,9 +5,9 @@ frappe.query_reports["Tally Migration Report"] = {
     filters: [
 		{
 			fieldname: "doctype",
-			label: __("DocType"),
+			label: __("Tally Field Mapping"),
 			fieldtype: "Link",
-			options: "DocType",
+			options: "Tally Field Mapping",
 			reqd: 1,
 			change: load_dynamic_filters
 		},
@@ -22,7 +22,31 @@ frappe.query_reports["Tally Migration Report"] = {
 		{ fieldname: "dyn_7", label: "", fieldtype: "Data", hidden: 1 },
 		{ fieldname: "dyn_8", label: "", fieldtype: "Data", hidden: 1 },
 		{ fieldname: "dyn_9", label: "", fieldtype: "Data", hidden: 1 },
-	]
+	],
+	onload: function(report) {
+
+        report.page.add_inner_button("Confirm Tally Creation", function () {
+			let a = frappe.query_report.filters.filter(r=>r.options == "Tally Field Mapping")
+			if(a){
+				console.log(a[0].value)
+				frappe.call({
+					method: "tally_migration.tally_migration.doctype.tally_field_mapping.tally_field_mapping.confirm_tally_creation",
+					args: {
+						tally_field_mapping: a[0].value
+					},
+					callback: function (r) {
+						if (!r.exc) {
+							frappe.msgprint("Updated Successfully");
+						}
+					}
+				});
+			}else{
+				frappe.msgprint("Set Tally Field Mapping Before Confirm Tally Creation")
+			}            			
+
+        });
+
+    }
 };
 
 function load_dynamic_filters() {
@@ -48,9 +72,9 @@ function apply_filters_to_placeholders(fields) {
 
 	frappe.query_reports["Tally Migration Report"].filters[0] = 		{
 			fieldname: "doctype",
-			label: __("DocType"),
+			label: __("Tally Field Mapping"),
 			fieldtype: "Link",
-			options: "DocType",
+			options: "Tally Field Mapping",
 			reqd: 1,
 			change: load_dynamic_filters,
 			default: frappe.query_report.get_filter("doctype").value
