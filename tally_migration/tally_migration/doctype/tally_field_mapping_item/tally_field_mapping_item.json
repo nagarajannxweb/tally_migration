@@ -42,7 +42,6 @@
   },
   {
    "columns": 2,
-   "depends_on": "eval:doc.is_child_table==1",
    "fieldname": "child_table_name",
    "fieldtype": "Data",
    "label": "Table Name"
@@ -106,13 +105,12 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-19 11:09:25.344604",
+ "modified": "2026-02-25 10:31:14.288190",
  "modified_by": "Administrator",
  "module": "Tally Migration",
  "name": "Tally Field Mapping Item",
  "owner": "Administrator",
  "permissions": [],
- "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
